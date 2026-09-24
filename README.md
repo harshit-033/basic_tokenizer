@@ -1,101 +1,47 @@
 # Basic Tokenizer
 
-## Abstract
+A simple Python tokenizer built to understand the fundamentals of text tokenization and vocabulary based text encoding.
 
-This repository contains a basic text tokenization implementation developed to study how raw text can be converted into a sequence of smaller textual units suitable for further natural language processing tasks.
+## Overview
 
-The implementation uses Python regular expressions to identify whitespace and selected punctuation marks as token boundaries. A plain-text literary document is used as the input corpus. The notebook demonstrates the tokenization process step by step, including text loading, delimiter selection, splitting, and removal of empty or whitespace-only elements.
+This repository develops a basic tokenizer in two stages.
 
-The work is intended as an educational implementation for understanding the preprocessing stage used in NLP and language-model pipelines.
+The first version focuses on splitting raw text into tokens using regular expressions.
 
-## 1. Introduction
+The second version extends the tokenizer with vocabulary construction, token to ID conversion, unknown token handling, and decoding.
 
-Tokenization is the process of dividing text into smaller units called tokens. Depending on the tokenizer design, tokens may represent words, punctuation marks, subwords, or individual characters.
+The project is intended for learning how tokenization works before moving to more advanced methods used in language models.
 
-This repository implements a simple rule-based tokenizer using Python and regular expressions. The purpose is not to reproduce a modern production tokenizer, but to provide a transparent implementation through which the fundamental operations of text tokenization can be examined.
-
-## 2. Objectives
-
-The main objectives of this work are:
-
-- To understand the basic concept of tokenization.
-- To read and preprocess a raw text corpus.
-- To identify words and selected punctuation marks as separate tokens.
-- To use regular expressions for defining token boundaries.
-- To remove empty and whitespace-only elements generated during splitting.
-- To inspect the resulting token sequence for further NLP processing.
-
-## 3. Methodology
-
-The tokenizer follows a simple preprocessing pipeline:
-
-```text
-Raw Text
-   |
-   v
-Read Text Corpus
-   |
-   v
-Define Token Boundaries
-   |
-   v
-Regular Expression Splitting
-   |
-   v
-Remove Empty / Whitespace Tokens
-   |
-   v
-Token Sequence
-```
-
-The implementation initially investigates whitespace-based splitting and then extends the delimiter pattern to preserve selected punctuation marks as independent tokens.
-
-The current regular-expression pattern separates:
-
-- Whitespace
-- Comma (,)
-- Period (.)
-- Colon (:)
-- Semicolon (;)
-- Question mark (?)
-- Underscore (_)
-- Exclamation mark (!)
-- Double quotation mark (")
-- Parentheses
-- Apostrophe (')
-- Double hyphen (--)
-
-After splitting, whitespace-only elements and empty strings are removed from the result.
-
-## 4. Repository Contents
+## Repository Structure
 
 | File | Description |
 |---|---|
-| `TOKENIZER.ipynb` | Jupyter Notebook containing the tokenizer implementation, experiments, intermediate outputs, and observations. |
-| `verdict.txt` | Text corpus used as the input for demonstrating the tokenization process. |
+| TOKENIZER.ipynb | First tokenizer implementation using regular expressions. |
+| TOKENIZER_V2.ipynb | Extended tokenizer with vocabulary, encoding, decoding, and unknown token handling. |
+| verdict.txt | Text corpus used for the initial tokenizer. |
+| words.txt | Large word list used to build the tokenizer vocabulary. |
 
-## 5. Implementation
+## Version 1
 
-The implementation is written in Python and primarily uses the standard `re` module for regular-expression based text processing.
+TOKENIZER.ipynb demonstrates the basic tokenization process.
 
-A simplified representation of the main operation is:
+The implementation:
 
-```python
-preprocessed = re.split(r'([,.:;?_!"()\']|--|\s)', content)
-preprocessed = [item for item in preprocessed if item.strip()]
-```
+1. Loads text from verdict.txt.
+2. Uses Python regular expressions to split text.
+3. Separates selected punctuation marks from words.
+4. Removes empty and whitespace-only elements.
+5. Produces a sequence of tokens.
 
-The use of capturing groups in the regular expression allows selected delimiters to remain visible in the resulting sequence rather than being discarded completely.
+The main tokenization pattern handles whitespace and punctuation such as commas, periods, colons, semicolons, question marks, exclamation marks, quotation marks, parentheses, apostrophes, and double hyphens.
 
-## 6. Example
-
-For an input such as:
+Example:
 
 ```text
 I had, always thought Jack Gisburn.
 ```
 
-the tokenizer separates words and selected punctuation into individual elements, producing a sequence conceptually similar to:
+becomes:
 
 ```text
 I
@@ -108,43 +54,83 @@ Gisburn
 .
 ```
 
-This illustrates the basic idea of converting continuous text into a structured token sequence.
+## Version 2
 
-## 7. Purpose and Applications
+TOKENIZER_V2.ipynb builds on the first implementation and introduces a vocabulary based tokenizer.
 
-The implementation is intended primarily for educational and experimental use. It provides a simple foundation for studying:
+The workflow is:
 
-- Text preprocessing
-- Natural language processing
-- Token boundaries
-- Regular expressions
-- Vocabulary construction
-- Subsequent encoding of text into numerical representations
+```text
+Text Corpus
+    |
+Tokenization
+    |
+Unique Tokens
+    |
+Sorted Vocabulary
+    |
+Token to ID Mapping
+    |
+Encoder and Decoder
+```
 
-The tokenizer can serve as an initial step toward implementing more advanced tokenization and language-model preprocessing techniques.
+The vocabulary is created from the unique tokens in words.txt. Two special tokens are then added:
 
-## 8. Limitations
+```text
+|<endofline>|
+|<unk>|
+```
 
-This implementation is intentionally basic and has several limitations:
+The tokenizer maintains two mappings:
 
-- It uses manually selected punctuation rules.
-- It does not implement subword tokenization such as BPE or WordPiece.
-- It does not construct a vocabulary or assign token IDs.
-- It does not provide a dedicated tokenizer class or reusable package interface.
-- Language-specific cases, Unicode normalization, contractions, and complex punctuation are not comprehensively handled.
-- It is not intended to replace optimized production tokenizers.
+```text
+str_to_int
+int_to_str
+```
 
-## 9. Requirements
+This allows text to be converted into integer IDs and integer IDs to be converted back into text.
 
-The notebook requires:
+### Encoding
 
-- Python 3.x
-- Jupyter Notebook or JupyterLab
-- Python standard library module: `re`
+The encoder tokenizes input text and converts every token into its corresponding vocabulary ID.
 
-No external Python package is required for the core implementation.
+Tokens that are not present in the vocabulary are replaced with:
 
-## 10. Usage
+```text
+|<unk>|
+```
+
+This provides basic unknown token handling.
+
+### Decoding
+
+The decoder converts token IDs back into their corresponding strings and performs basic punctuation spacing cleanup.
+
+## Example
+
+For an input such as:
+
+```text
+hello how are you?my name is harshit
+```
+
+the encoder produces a sequence of integer IDs based on the vocabulary.
+
+If a word or token is not present in the vocabulary, the corresponding ID is the ID assigned to `|<unk>|`.
+
+The decoder can then convert the IDs back into text.
+
+## Requirements
+
+Python 3.x
+
+Jupyter Notebook or JupyterLab
+
+The implementation uses the Python standard library, primarily the `re` module.
+
+No external package is required for the tokenizer itself.
+
+## Usage
 
 Clone the repository:
 
@@ -153,19 +139,71 @@ git clone https://github.com/harshit-033/basic_tokenizer.git
 cd basic_tokenizer
 ```
 
-Open the notebook:
+Open the notebooks:
 
 ```bash
 jupyter notebook TOKENIZER.ipynb
 ```
 
-Run the cells sequentially to observe the text loading, preprocessing, splitting, and resulting token sequence.
+or
 
-## 11. Conclusion
+```bash
+jupyter notebook TOKENIZER_V2.ipynb
+```
 
-This repository presents a basic and transparent implementation of text tokenization using Python regular expressions. The work demonstrates how raw textual data can be transformed into discrete tokens by defining explicit token boundaries and applying systematic preprocessing.
+Run the cells in order to reproduce the tokenization, vocabulary construction, encoding, and decoding steps.
 
-Although simple compared with modern subword tokenizers, the implementation provides a practical foundation for understanding one of the first stages of NLP and language-model data preparation.
+## Current Scope
+
+This project currently provides:
+
+- Rule based tokenization
+- Regular expression based token splitting
+- Vocabulary construction
+- Token to integer mapping
+- Integer to token mapping
+- Unknown token handling
+- Basic encoding
+- Basic decoding
+- Punctuation spacing cleanup during decoding
+
+## Limitations
+
+This is an educational tokenizer and is not intended to replace production tokenization libraries.
+
+It does not currently implement:
+
+- Byte Pair Encoding
+- WordPiece
+- Unigram tokenization
+- Subword vocabulary training
+- Unicode normalization
+- Efficient vocabulary serialization
+- A standalone reusable Python package
+
+The current implementation also uses a large word list as the vocabulary source rather than learning a vocabulary from a training corpus.
+
+## Learning Progression
+
+The repository is structured as a progression:
+
+```text
+Raw Text
+    |
+Basic Tokenization
+    |
+Vocabulary
+    |
+Token IDs
+    |
+Encoding
+    |
+Decoding
+    |
+Unknown Token Handling
+```
+
+This provides a foundation for understanding the preprocessing pipeline used by language models.
 
 ## Author
 
